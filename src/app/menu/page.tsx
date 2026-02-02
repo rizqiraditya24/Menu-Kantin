@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, Category, Product } from '@/lib/supabase';
+import { storage, Category, Product } from '@/lib/storage';
 import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
 import Modal from '@/components/Modal';
@@ -18,32 +18,14 @@ export default function MenuPage() {
         fetchData();
     }, []);
 
-    const fetchData = async () => {
+    const fetchData = () => {
         setLoading(true);
         try {
-            // Fetch categories with product count
-            const { data: categoriesData } = await supabase
-                .from('categories')
-                .select('*, products(count)')
-                .order('name');
+            const categoriesData = storage.getCategories();
+            const productsData = storage.getProducts();
 
-            if (categoriesData) {
-                const categoriesWithCount = categoriesData.map((cat: any) => ({
-                    ...cat,
-                    product_count: cat.products?.[0]?.count || 0,
-                }));
-                setCategories(categoriesWithCount);
-            }
-
-            // Fetch products with category
-            const { data: productsData } = await supabase
-                .from('products')
-                .select('*, category:categories(*)')
-                .order('name');
-
-            if (productsData) {
-                setProducts(productsData);
-            }
+            setCategories(categoriesData);
+            setProducts(productsData);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -55,7 +37,7 @@ export default function MenuPage() {
         const matchesCategory = !selectedCategory || product.category_id === selectedCategory;
         const matchesSearch = !searchQuery ||
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesCategory && matchesSearch;
     });
 
@@ -77,7 +59,7 @@ export default function MenuPage() {
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Cari menu..."
+                        placeholder="Cari menu... (Local Demo)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-4 py-3 pl-12 rounded-xl border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white shadow-sm"

@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, Category } from '@/lib/supabase';
+import { storage, Category } from '@/lib/storage';
 import Modal from '@/components/Modal';
 
 export default function KategoriPage() {
-    const [categories, setCategories] = useState<(Category & { product_count: number })[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [viewingCategory, setViewingCategory] = useState<(Category & { product_count: number }) | null>(null);
+    const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState({ name: '' });
     const [saving, setSaving] = useState(false);
 
@@ -18,22 +18,11 @@ export default function KategoriPage() {
         fetchCategories();
     }, []);
 
-    const fetchCategories = async () => {
+    const fetchCategories = () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('categories')
-                .select('*, products(count)')
-                .order('name');
-
-            if (error) throw error;
-
-            const categoriesWithCount = data?.map((cat: any) => ({
-                ...cat,
-                product_count: cat.products?.[0]?.count || 0,
-            })) || [];
-
-            setCategories(categoriesWithCount);
+            const data = storage.getCategories();
+            setCategories(data);
         } catch (error) {
             console.error('Error fetching categories:', error);
         } finally {
@@ -53,7 +42,7 @@ export default function KategoriPage() {
         setIsModalOpen(true);
     };
 
-    const openViewModal = (category: Category & { product_count: number }) => {
+    const openViewModal = (category: Category) => {
         setViewingCategory(category);
         setIsViewModalOpen(true);
     };
@@ -65,18 +54,11 @@ export default function KategoriPage() {
         setSaving(true);
         try {
             if (editingCategory) {
-                const { error } = await supabase
-                    .from('categories')
-                    .update({ name: formData.name.trim() })
-                    .eq('id', editingCategory.id);
-
-                if (error) throw error;
+                const { error } = storage.updateCategory(editingCategory.id, formData.name.trim());
+                if (error) throw new Error(error.message);
             } else {
-                const { error } = await supabase
-                    .from('categories')
-                    .insert({ name: formData.name.trim() });
-
-                if (error) throw error;
+                const { error } = storage.addCategory(formData.name.trim());
+                if (error) throw new Error(error.message);
             }
 
             setIsModalOpen(false);
@@ -89,22 +71,18 @@ export default function KategoriPage() {
         }
     };
 
-    const handleDelete = async (category: Category & { product_count: number }) => {
-        if (category.product_count > 0) {
-            alert(`Tidak dapat menghapus kategori "${category.name}" karena masih memiliki ${category.product_count} produk.`);
+    const handleDelete = async (category: Category) => {
+        const count = category.product_count || 0;
+        if (count > 0) {
+            alert(`Tidak dapat menghapus kategori "${category.name}" karena masih memiliki ${count} produk.`);
             return;
         }
 
         if (!confirm(`Yakin ingin menghapus kategori "${category.name}"?`)) return;
 
         try {
-            const { error } = await supabase
-                .from('categories')
-                .delete()
-                .eq('id', category.id);
-
-            if (error) throw error;
-
+            const { error } = storage.deleteCategory(category.id);
+            if (error) throw new Error(error.message);
             fetchCategories();
         } catch (error: any) {
             console.error('Error deleting category:', error);
@@ -125,7 +103,7 @@ export default function KategoriPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Kategori</h2>
-                    <p className="text-gray-600">Kelola kategori produk</p>
+                    <p className="text-gray-600">Kelola kategori produk (Local Storage)</p>
                 </div>
                 <button
                     onClick={openAddModal}
@@ -162,7 +140,7 @@ export default function KategoriPage() {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="inline-flex items-center justify-center bg-secondary-100 text-secondary-700 px-3 py-1 rounded-full text-sm font-medium">
-                                                {category.product_count}
+                                                {category.product_count || 0}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -181,10 +159,10 @@ export default function KategoriPage() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(category)}
-                                                    disabled={category.product_count > 0}
-                                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${category.product_count > 0
-                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-red-100 hover:bg-red-200 text-red-700'
+                                                    disabled={(category.product_count || 0) > 0}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${(category.product_count || 0) > 0
+                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                            : 'bg-red-100 hover:bg-red-200 text-red-700'
                                                         }`}
                                                 >
                                                     Hapus
@@ -252,7 +230,7 @@ export default function KategoriPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Jumlah Produk</label>
-                            <p className="text-lg font-semibold text-gray-800">{viewingCategory.product_count} produk</p>
+                            <p className="text-lg font-semibold text-gray-800">{viewingCategory.product_count || 0} produk</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Dibuat Pada</label>
