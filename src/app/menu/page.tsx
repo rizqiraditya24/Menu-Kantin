@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, Category, Product } from '@/lib/supabase';
+import { supabase, Category, Product, formatPrice, getSiteSettings, SiteSettings } from '@/lib/supabase';
+import { useCart } from '@/lib/CartContext';
 import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
 import Modal from '@/components/Modal';
+import CartDrawer from '@/components/CartDrawer';
+import CheckoutModal from '@/components/CheckoutModal';
 
 export default function MenuPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -13,6 +16,11 @@ export default function MenuPage() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+
+    const { addToCart, totalItems } = useCart();
 
     useEffect(() => {
         fetchData();
@@ -44,6 +52,10 @@ export default function MenuPage() {
             if (productsData) {
                 setProducts(productsData);
             }
+
+            // Fetch site settings
+            const settings = await getSiteSettings();
+            if (settings) setSiteSettings(settings);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -58,6 +70,15 @@ export default function MenuPage() {
             product.description?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
+
+    const handleAddToCart = (product: Product) => {
+        addToCart(product);
+    };
+
+    const handleCheckout = () => {
+        setIsCartOpen(false);
+        setIsCheckoutOpen(true);
+    };
 
     if (loading) {
         return (
@@ -118,12 +139,13 @@ export default function MenuPage() {
 
             {/* Products Grid */}
             {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                     {filteredProducts.map(product => (
                         <ProductCard
                             key={product.id}
                             product={product}
-                            onClick={() => setViewingProduct(product)}
+                            onViewDetail={() => setViewingProduct(product)}
+                            onAddToCart={handleAddToCart}
                         />
                     ))}
                 </div>
@@ -138,6 +160,19 @@ export default function MenuPage() {
                         }
                     </p>
                 </div>
+            )}
+
+            {/* Floating Cart Button */}
+            {totalItems > 0 && (
+                <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="fixed bottom-6 right-6 bg-primary-600 hover:bg-primary-700 text-white w-16 h-16 rounded-full shadow-2xl shadow-primary-400 flex items-center justify-center text-2xl transition-all hover:scale-110 z-30 animate-fadeIn"
+                >
+                    🛒
+                    <span className="absolute -top-1 -right-1 bg-secondary-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
+                        {totalItems}
+                    </span>
+                </button>
             )}
 
             {/* Product Detail Modal */}
@@ -169,13 +204,8 @@ export default function MenuPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Harga</label>
-                            <p className="text-2xl font-bold text-primary-600">
-                                {new Intl.NumberFormat('id-ID', {
-                                    style: 'currency',
-                                    currency: 'IDR',
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                }).format(viewingProduct.price)}
+                            <p className="text-2xl font-bold text-green-600">
+                                {formatPrice(viewingProduct.price)}
                             </p>
                         </div>
                         {viewingProduct.description && (
@@ -186,15 +216,39 @@ export default function MenuPage() {
                                 </p>
                             </div>
                         )}
-                        <button
-                            onClick={() => setViewingProduct(null)}
-                            className="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl font-medium transition-colors mt-6 shadow-lg shadow-primary-200"
-                        >
-                            Tutup
-                        </button>
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setViewingProduct(null)}
+                                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl font-medium transition-colors"
+                            >
+                                Tutup
+                            </button>
+                            <button
+                                onClick={() => {
+                                    handleAddToCart(viewingProduct);
+                                    setViewingProduct(null);
+                                }}
+                                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-200"
+                            >
+                                🛒 Tambah ke Keranjang
+                            </button>
+                        </div>
                     </div>
                 )}
             </Modal>
+
+            {/* Cart Drawer */}
+            <CartDrawer
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                onCheckout={handleCheckout}
+            />
+
+            {/* Checkout Modal */}
+            <CheckoutModal
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
+            />
         </div>
     );
 }

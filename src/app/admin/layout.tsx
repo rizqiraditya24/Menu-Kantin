@@ -18,8 +18,24 @@ export default function AdminLayout({
     const [isLoading, setIsLoading] = useState(true);
     const [loginError, setLoginError] = useState('');
     const [user, setUser] = useState<any>(null);
+    const [settings, setSettings] = useState<{ logo_url: string | null; site_name: string }>({ logo_url: null, site_name: 'Menu Warung' });
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
+        // Load settings from cache first
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('menu_kantin_settings');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    setSettings({
+                        logo_url: parsed.logo_url || null,
+                        site_name: parsed.site_name || 'Menu Warung'
+                    });
+                } catch (e) { console.error(e); }
+            }
+        }
+
         checkUser();
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
             setUser(session?.user ?? null);
@@ -28,6 +44,11 @@ export default function AdminLayout({
 
         return () => subscription.unsubscribe();
     }, []);
+
+    // Close mobile menu when route changes
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [pathname]);
 
     const checkUser = async () => {
         try {
@@ -70,6 +91,8 @@ export default function AdminLayout({
         { href: '/admin', label: 'Dashboard', emoji: '📊' },
         { href: '/admin/kategori', label: 'Kategori', emoji: '📁' },
         { href: '/admin/produk', label: 'Produk', emoji: '🍜' },
+        { href: '/admin/pesanan', label: 'Pesanan', emoji: '📋' },
+        { href: '/admin/pengaturan', label: 'Pengaturan', emoji: '⚙️' },
     ];
 
     if (isLoading) {
@@ -86,9 +109,13 @@ export default function AdminLayout({
             <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500 flex items-center justify-center p-5">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fadeIn">
                     <div className="text-center mb-8">
-                        <span className="text-5xl block mb-4">🍜</span>
+                        {settings.logo_url ? (
+                            <img src={settings.logo_url} alt="Logo" className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 bg-gray-50 border-2 border-gray-100" />
+                        ) : (
+                            <span className="text-5xl block mb-4">🍜</span>
+                        )}
                         <h1 className="text-2xl font-bold text-gray-800">Admin Login</h1>
-                        <p className="text-gray-500 text-sm ">Menu Warung</p>
+                        <p className="text-gray-500 text-sm ">{settings.site_name}</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-5">
@@ -163,33 +190,106 @@ export default function AdminLayout({
             <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
+                        {/* Logo & Site Name */}
                         <div className="flex items-center gap-2 sm:gap-3">
-                            <span className="text-xl sm:text-2xl">🍜</span>
+                            {settings.logo_url ? (
+                                <img src={settings.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover bg-gray-50 border border-gray-200" />
+                            ) : (
+                                <span className="text-xl sm:text-2xl">🍜</span>
+                            )}
                             <div>
                                 <h1 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">Admin Panel</h1>
-                                <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">Menu Warung</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">{settings.site_name}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-3">
+
+                        {/* Desktop Actions */}
+                        <div className="hidden md:flex items-center gap-3">
                             <Link
                                 href="/menu"
-                                className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
+                                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
                             >
                                 Lihat Menu
                             </Link>
                             <button
                                 onClick={handleLogout}
-                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                             >
                                 Logout
                             </button>
                         </div>
+
+                        {/* Mobile Burger Button */}
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                        >
+                            <span className="text-2xl">☰</span>
+                        </button>
                     </div>
                 </div>
             </header>
 
-            {/* Navigation */}
-            <nav className="bg-white border-b border-gray-200">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+                <div className="fixed inset-0 z-50 md:hidden animate-fadeIn">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+                        onClick={() => setMobileMenuOpen(false)}
+                    ></div>
+
+                    {/* Drawer */}
+                    <div className="absolute right-0 top-0 bottom-0 w-64 bg-white shadow-2xl p-5 flex flex-col animate-slideInRight">
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="font-bold text-lg text-gray-800">Menu Admin</span>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <nav className="flex-1 space-y-2 overflow-y-auto">
+                            {navItems.map(item => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`
+                                        flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors
+                                        ${pathname === item.href
+                                            ? 'bg-primary-50 text-primary-700 border border-primary-100'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                        }
+                                    `}
+                                >
+                                    <span className="text-xl">{item.emoji}</span>
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </nav>
+
+                        <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
+                            <Link
+                                href="/menu"
+                                className="flex items-center justify-center gap-2 w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                            >
+                                🍽️ Lihat Menu
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                            >
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:block bg-white border-b border-gray-200">
                 <div className="container mx-auto px-5 sm:px-6 lg:px-8">
                     <div className="flex gap-1 overflow-x-auto py-3">
                         {navItems.map(item => (
@@ -213,8 +313,8 @@ export default function AdminLayout({
             </nav>
 
             {/* Main Content */}
-            <main className="container mx-auto px-5 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 min-h-[calc(100vh-12rem)]">
                     {children}
                 </div>
             </main>

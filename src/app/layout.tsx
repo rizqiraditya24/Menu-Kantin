@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
-    title: "Menu Warung",
-    description: "Menu makanan warung/kantin online",
-};
+import { getSiteSettings } from "@/lib/supabase";
+
+export async function generateMetadata() {
+    const settings = await getSiteSettings();
+    return {
+        title: settings?.site_name || "Menu Warung",
+        description: settings?.slogan || "Menu makanan warung/kantin online",
+        icons: {
+            icon: settings?.logo_url || '/favicon.ico', // Fallback if no logo
+        },
+    };
+}
 
 export default function RootLayout({
     children,

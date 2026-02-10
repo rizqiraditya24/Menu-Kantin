@@ -1,24 +1,30 @@
-import { Product } from '@/lib/supabase';
+'use client';
+
+import { Product, formatPrice } from '@/lib/supabase';
+import { useState } from 'react';
 
 interface ProductCardProps {
     product: Product;
-    onClick?: () => void;
+    onViewDetail?: () => void;
+    onAddToCart?: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(price);
+export default function ProductCard({ product, onViewDetail, onAddToCart }: ProductCardProps) {
+    const [addedAnim, setAddedAnim] = useState(false);
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onAddToCart) {
+            onAddToCart(product);
+            setAddedAnim(true);
+            setTimeout(() => setAddedAnim(false), 700);
+        }
     };
 
     return (
         <div
-            onClick={onClick}
-            className={`bg-white rounded-2xl shadow-lg overflow-hidden card-hover border border-secondary-100 ${onClick ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+            onClick={onViewDetail}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden border border-secondary-100 cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
         >
             {/* Image */}
             <div className="relative aspect-[4/3] bg-gradient-to-br from-secondary-100 to-secondary-200">
@@ -29,28 +35,28 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-6xl">🍽️</span>
+                    <div className="flex items-center justify-center w-full h-full text-5xl bg-gray-100">
+                        🍽️
                     </div>
                 )}
                 {/* Price Tag */}
-                <div className="absolute bottom-3 right-3 bg-primary-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                <div className="absolute bottom-2 right-2 bg-primary-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-md">
                     {formatPrice(product.price)}
                 </div>
             </div>
 
             {/* Content */}
-            <div className="p-4">
-                <h3 className="font-bold text-lg text-gray-800 mb-1 line-clamp-1">
+            <div className="p-3">
+                <h3 className="font-bold text-gray-800 text-sm sm:text-base leading-tight mb-1 line-clamp-2">
                     {product.name}
                 </h3>
                 {product.category && (
-                    <span className="inline-block bg-secondary-100 text-secondary-700 text-xs font-medium px-2 py-1 rounded-full mb-2">
+                    <p className="text-secondary-500 text-xs font-medium mb-1">
                         {product.category.name}
-                    </span>
+                    </p>
                 )}
                 {product.description && (
-                    <p className="text-gray-500 text-sm line-clamp-2">
+                    <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 leading-snug">
                         {product.description}
                     </p>
                 )}

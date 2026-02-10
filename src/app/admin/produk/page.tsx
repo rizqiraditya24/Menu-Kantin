@@ -199,7 +199,7 @@ export default function ProdukPage() {
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-semibold text-gray-800 truncate">{product.name}</h3>
                                         <p className="text-sm text-gray-500">{product.category?.name}</p>
-                                        <p className="text-primary-600 font-bold mt-1">{formatPrice(product.price)}</p>
+                                        <p className="text-green-600 font-bold mt-1">{formatPrice(product.price)}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mt-3">
@@ -278,7 +278,7 @@ export default function ProdukPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <span className="font-bold text-primary-600">{formatPrice(product.price)}</span>
+                                            <span className="font-bold text-green-600">{formatPrice(product.price)}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-center gap-2">
@@ -427,7 +427,7 @@ export default function ProdukPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Harga</label>
-                            <p className="text-xl font-bold text-primary-600">{formatPrice(viewingProduct.price)}</p>
+                            <p className="text-xl font-bold text-green-600">{formatPrice(viewingProduct.price)}</p>
                         </div>
                         {viewingProduct.description && (
                             <div>
