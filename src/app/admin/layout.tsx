@@ -22,19 +22,26 @@ export default function AdminLayout({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        // Load settings from cache first
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem('menu_kantin_settings');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    setSettings({
-                        logo_url: parsed.logo_url || null,
-                        site_name: parsed.site_name || 'Menu Warung'
-                    });
-                } catch (e) { console.error(e); }
+        const loadSettings = () => {
+            if (typeof window !== 'undefined') {
+                const cached = localStorage.getItem('siteSettings');
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        setSettings({
+                            logo_url: parsed.logo_url || null,
+                            site_name: parsed.site_name || 'Menu Warung'
+                        });
+                    } catch (e) { console.error(e); }
+                }
             }
-        }
+        };
+
+        // Initial load
+        loadSettings();
+
+        // Listen for updates
+        window.addEventListener('siteSettingsUpdated', loadSettings);
 
         checkUser();
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
@@ -42,7 +49,10 @@ export default function AdminLayout({
             setIsLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+            window.removeEventListener('siteSettingsUpdated', loadSettings);
+        };
     }, []);
 
     // Close mobile menu when route changes

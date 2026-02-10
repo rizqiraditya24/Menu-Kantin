@@ -50,6 +50,17 @@ export default function PengaturanPage() {
                 slogan: settings.slogan || null,
                 whatsapp_number: settings.whatsapp_number || null,
             });
+
+            // Update local storage and notify listeners
+            const newSettings = {
+                site_name: settings.site_name || 'Menu Warung',
+                logo_url: settings.logo_url || null,
+                slogan: settings.slogan || null,
+                whatsapp_number: settings.whatsapp_number || null,
+            };
+            localStorage.setItem('siteSettings', JSON.stringify(newSettings));
+            window.dispatchEvent(new Event('siteSettingsUpdated'));
+
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
         } catch (error: any) {
