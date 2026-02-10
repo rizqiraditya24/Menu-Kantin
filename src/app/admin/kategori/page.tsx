@@ -137,7 +137,53 @@ export default function KategoriPage() {
 
             {/* Table */}
             <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Mobile Cards */}
+                <div className="block md:hidden divide-y divide-gray-100">
+                    {categories.length === 0 ? (
+                        <div className="px-6 py-12 text-center text-gray-500">
+                            <span className="text-4xl block mb-2">📁</span>
+                            Belum ada kategori. Tambahkan kategori pertama Anda!
+                        </div>
+                    ) : (
+                        categories.map(category => (
+                            <div key={category.id} className="p-4">
+                                <div className="flex gap-4 items-center">
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <h3 className="font-semibold text-gray-800 truncate text-lg">{category.name}</h3>
+                                        <p className="text-sm text-gray-500">{category.product_count} produk</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-4">
+                                    <button
+                                        onClick={() => openViewModal(category)}
+                                        className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                                    >
+                                        Lihat
+                                    </button>
+                                    <button
+                                        onClick={() => openEditModal(category)}
+                                        className="flex-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(category)}
+                                        disabled={category.product_count > 0}
+                                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${category.product_count > 0
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-red-100 hover:bg-red-200 text-red-700'
+                                            }`}
+                                    >
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
