@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { storage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 interface Stats {
@@ -17,14 +17,16 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    const fetchStats = () => {
+    const fetchStats = async () => {
         try {
-            const categories = storage.getCategories();
-            const products = storage.getProducts();
+            const [categoriesResult, productsResult] = await Promise.all([
+                supabase.from('categories').select('*', { count: 'exact', head: true }),
+                supabase.from('products').select('*', { count: 'exact', head: true }),
+            ]);
 
             setStats({
-                totalCategories: categories.length,
-                totalProducts: products.length,
+                totalCategories: categoriesResult.count || 0,
+                totalProducts: productsResult.count || 0,
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -45,7 +47,7 @@ export default function AdminDashboard() {
         <div className="animate-fadeIn">
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Dashboard</h2>
-                <p className="text-gray-600">Selamat datang di Admin Panel Menu Warung (Local Storage Mode)</p>
+                <p className="text-gray-600">Selamat datang di Admin Panel Menu Warung</p>
             </div>
 
             {/* Stats Cards */}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { storage, Category, Product } from '@/lib/storage';
+import { supabase, Category, Product } from '@/lib/supabase';
 import Modal from '@/components/Modal';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -26,14 +26,16 @@ export default function ProdukPage() {
         fetchData();
     }, []);
 
-    const fetchData = () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const productsData = storage.getProducts();
-            const categoriesData = storage.getCategories();
+            const [productsResult, categoriesResult] = await Promise.all([
+                supabase.from('products').select('*, category:categories(*)').order('name'),
+                supabase.from('categories').select('*').order('name'),
+            ]);
 
-            setProducts(productsData);
-            setCategories(categoriesData);
+            if (productsResult.data) setProducts(productsResult.data);
+            if (categoriesResult.data) setCategories(categoriesResult.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -85,11 +87,18 @@ export default function ProdukPage() {
             };
 
             if (editingProduct) {
-                const { error } = storage.updateProduct(editingProduct.id, productData);
-                if (error) throw new Error(error.message);
+                const { error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', editingProduct.id);
+
+                if (error) throw error;
             } else {
-                const { error } = storage.addProduct(productData);
-                if (error) throw new Error(error.message);
+                const { error } = await supabase
+                    .from('products')
+                    .insert(productData);
+
+                if (error) throw error;
             }
 
             setIsModalOpen(false);
@@ -106,8 +115,13 @@ export default function ProdukPage() {
         if (!confirm(`Yakin ingin menghapus produk "${product.name}"?`)) return;
 
         try {
-            const { error } = storage.deleteProduct(product.id);
-            if (error) throw new Error(error.message);
+            const { error } = await supabase
+                .from('products')
+                .delete()
+                .eq('id', product.id);
+
+            if (error) throw error;
+
             fetchData();
         } catch (error: any) {
             console.error('Error deleting product:', error);
@@ -137,7 +151,7 @@ export default function ProdukPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Produk</h2>
-                    <p className="text-gray-600">Kelola produk menu (Local Storage)</p>
+                    <p className="text-gray-600">Kelola produk menu</p>
                 </div>
                 <button
                     onClick={openAddModal}

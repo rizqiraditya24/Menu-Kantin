@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface ImageUploadProps {
     currentImageUrl?: string | null;
@@ -16,16 +17,37 @@ export default function ImageUpload({ currentImageUrl, onImageUploaded }: ImageU
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Preview & "Upload" (Base64)
-        setUploading(true);
+        // Preview
         const reader = new FileReader();
         reader.onloadend = () => {
-            const result = reader.result as string;
-            setPreview(result);
-            onImageUploaded(result);
-            setUploading(false);
+            setPreview(reader.result as string);
         };
         reader.readAsDataURL(file);
+
+        // Upload to Supabase
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `products/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('product-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('product-images')
+                .getPublicUrl(filePath);
+
+            onImageUploaded(publicUrl);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Gagal mengupload gambar');
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (

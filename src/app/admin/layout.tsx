@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { storage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLayout({
     children,
@@ -12,39 +12,57 @@ export default function AdminLayout({
 }) {
     const pathname = usePathname();
     const router = useRouter();
-    const [email, setEmail] = useState('coba@example.com');
-    const [password, setPassword] = useState('123456789');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [loginError, setLoginError] = useState('');
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
-        storage.init();
         checkUser();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+            setUser(session?.user ?? null);
+            setIsLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const checkUser = () => {
-        const user = storage.getUser();
-        setUser(user);
-        setIsLoading(false);
-    };
-
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoginError('');
-
-        if (password === '123456789') {
-            const { user } = storage.login(email);
-            setUser(user);
-        } else {
-            setLoginError('Password salah (Demo: 123456789)');
+    const checkUser = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+        } catch (error) {
+            console.error('Error checking session:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleLogout = () => {
-        storage.logout();
-        setUser(null);
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoginError('');
+
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) {
+                setLoginError(error.message === 'Invalid login credentials'
+                    ? 'Email atau password salah'
+                    : error.message);
+            }
+        } catch (error: any) {
+            setLoginError('Terjadi kesalahan saat login');
+            console.error('Login error:', error);
+        }
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
         router.push('/menu');
     };
 
@@ -70,7 +88,7 @@ export default function AdminLayout({
                     <div className="text-center mb-8">
                         <span className="text-5xl block mb-4">🍜</span>
                         <h1 className="text-2xl font-bold text-gray-800">Admin Login</h1>
-                        <p className="text-gray-500 text-sm ">Menu Warung (Local Demo)</p>
+                        <p className="text-gray-500 text-sm ">Menu Warung</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-5">
@@ -149,7 +167,7 @@ export default function AdminLayout({
                             <span className="text-xl sm:text-2xl">🍜</span>
                             <div>
                                 <h1 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">Admin Panel</h1>
-                                <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">Menu Warung (Local Demo)</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">Menu Warung</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3">
