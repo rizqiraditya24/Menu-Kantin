@@ -72,6 +72,32 @@ export default function ProdukPage() {
         setIsViewModalOpen(true);
     };
 
+    // Extract storage file path from a Supabase public URL
+    const getStoragePathFromUrl = (url: string): string | null => {
+        try {
+            const marker = `/storage/v1/object/public/product-images/`;
+            const idx = url.indexOf(marker);
+            if (idx === -1) return null;
+            return url.substring(idx + marker.length);
+        } catch {
+            return null;
+        }
+    };
+
+    // Delete image file from Supabase Storage
+    const deleteImageFromStorage = async (imageUrl: string) => {
+        const filePath = getStoragePathFromUrl(imageUrl);
+        if (!filePath) return;
+
+        try {
+            await supabase.storage
+                .from('product-images')
+                .remove([filePath]);
+        } catch (err) {
+            console.error('Failed to delete image from storage:', err);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name.trim() || !formData.category_id || !formData.price) return;
@@ -87,6 +113,13 @@ export default function ProdukPage() {
             };
 
             if (editingProduct) {
+                // If image changed, delete old image from storage
+                const oldImageUrl = editingProduct.image_url;
+                const newImageUrl = formData.image_url || null;
+                if (oldImageUrl && newImageUrl !== oldImageUrl) {
+                    await deleteImageFromStorage(oldImageUrl);
+                }
+
                 const { error } = await supabase
                     .from('products')
                     .update(productData)
@@ -115,6 +148,11 @@ export default function ProdukPage() {
         if (!confirm(`Yakin ingin menghapus produk "${product.name}"?`)) return;
 
         try {
+            // Delete image from storage first
+            if (product.image_url) {
+                await deleteImageFromStorage(product.image_url);
+            }
+
             const { error } = await supabase
                 .from('products')
                 .delete()

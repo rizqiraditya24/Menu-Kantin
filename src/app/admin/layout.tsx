@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSiteSettings } from '@/lib/supabase';
 
 export default function AdminLayout({
     children,
@@ -22,7 +22,8 @@ export default function AdminLayout({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        const loadSettings = () => {
+        const loadSettings = async () => {
+            // 1. Try cache first for immediate render
             if (typeof window !== 'undefined') {
                 const cached = localStorage.getItem('siteSettings');
                 if (cached) {
@@ -34,6 +35,22 @@ export default function AdminLayout({
                         });
                     } catch (e) { console.error(e); }
                 }
+            }
+
+            // 2. Always fetch fresh data from DB
+            try {
+                const freshData = await getSiteSettings();
+                if (freshData) {
+                    const newSettings = {
+                        logo_url: freshData.logo_url || null,
+                        site_name: freshData.site_name || 'Menu Warung'
+                    };
+                    setSettings(newSettings);
+                    // Update cache with fresh data
+                    localStorage.setItem('siteSettings', JSON.stringify(newSettings));
+                }
+            } catch (error) {
+                console.error('Error fetching fresh settings:', error);
             }
         };
 

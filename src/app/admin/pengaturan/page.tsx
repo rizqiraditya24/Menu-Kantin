@@ -14,6 +14,7 @@ export default function PengaturanPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [oldLogoUrl, setOldLogoUrl] = useState<string | null>(null);
 
     useEffect(() => {
         fetchSettings();
@@ -30,11 +31,42 @@ export default function PengaturanPage() {
                     slogan: data.slogan || '',
                     whatsapp_number: data.whatsapp_number || '',
                 });
+                // Remember the current logo URL to delete later if changed
+                setOldLogoUrl(data.logo_url || null);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Extract storage file path from a Supabase public URL
+    const getStoragePathFromUrl = (url: string, bucket: string): string | null => {
+        try {
+            const marker = `/storage/v1/object/public/${bucket}/`;
+            const idx = url.indexOf(marker);
+            if (idx === -1) return null;
+            return url.substring(idx + marker.length);
+        } catch {
+            return null;
+        }
+    };
+
+    // Delete old logo file from Supabase Storage
+    const deleteOldLogo = async (oldUrl: string) => {
+        const filePath = getStoragePathFromUrl(oldUrl, 'product-images');
+        if (!filePath) return;
+
+        try {
+            const { error } = await supabase.storage
+                .from('product-images')
+                .remove([filePath]);
+            if (error) {
+                console.error('Error deleting old logo:', error.message);
+            }
+        } catch (err) {
+            console.error('Failed to delete old logo:', err);
         }
     };
 
@@ -44,22 +76,37 @@ export default function PengaturanPage() {
         setSaved(false);
 
         try {
+            const newLogoUrl = settings.logo_url || null;
+
+            // If logo changed, delete the old one from storage
+            if (oldLogoUrl && newLogoUrl !== oldLogoUrl) {
+                await deleteOldLogo(oldLogoUrl);
+            }
+
             await upsertSiteSettings({
                 site_name: settings.site_name || 'Menu Warung',
-                logo_url: settings.logo_url || null,
+                logo_url: newLogoUrl,
                 slogan: settings.slogan || null,
                 whatsapp_number: settings.whatsapp_number || null,
             });
 
-            // Update local storage and notify listeners
-            const newSettings = {
+            // Clear all site settings cache
+            localStorage.removeItem('siteSettings');
+
+            // Write fresh data to cache
+            const freshSettings = {
                 site_name: settings.site_name || 'Menu Warung',
-                logo_url: settings.logo_url || null,
+                logo_url: newLogoUrl,
                 slogan: settings.slogan || null,
                 whatsapp_number: settings.whatsapp_number || null,
             };
-            localStorage.setItem('siteSettings', JSON.stringify(newSettings));
+            localStorage.setItem('siteSettings', JSON.stringify(freshSettings));
+
+            // Notify layout and other listeners to refresh
             window.dispatchEvent(new Event('siteSettingsUpdated'));
+
+            // Update old logo reference to the new one
+            setOldLogoUrl(newLogoUrl);
 
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);

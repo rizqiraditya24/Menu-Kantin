@@ -9,7 +9,9 @@ export async function generateMetadata() {
         title: settings?.site_name || "Menu Warung",
         description: settings?.slogan || "Menu makanan warung/kantin online",
         icons: {
-            icon: settings?.logo_url || '/favicon.ico', // Fallback if no logo
+            icon: settings?.logo_url || '/favicon.ico',
+            shortcut: settings?.logo_url || '/favicon.ico',
+            apple: settings?.logo_url || '/favicon.ico',
         },
     };
 }
