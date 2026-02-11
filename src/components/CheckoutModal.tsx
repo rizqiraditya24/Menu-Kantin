@@ -16,7 +16,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     const [customerNote, setCustomerNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
-    const [siteName, setSiteName] = useState('Menu Warung');
+    const [siteName, setSiteName] = useState('Pesan Warung');
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {

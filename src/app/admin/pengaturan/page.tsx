@@ -84,7 +84,7 @@ export default function PengaturanPage() {
             }
 
             await upsertSiteSettings({
-                site_name: settings.site_name || 'Menu Warung',
+                site_name: settings.site_name || 'Pesan Warung',
                 logo_url: newLogoUrl,
                 slogan: settings.slogan || null,
                 whatsapp_number: settings.whatsapp_number || null,
@@ -95,7 +95,7 @@ export default function PengaturanPage() {
 
             // Write fresh data to cache
             const freshSettings = {
-                site_name: settings.site_name || 'Menu Warung',
+                site_name: settings.site_name || 'Pesan Warung',
                 logo_url: newLogoUrl,
                 slogan: settings.slogan || null,
                 whatsapp_number: settings.whatsapp_number || null,
@@ -225,7 +225,7 @@ export default function PengaturanPage() {
                                     )}
                                     <div>
                                         <h4 className="text-lg font-bold text-white">
-                                            {settings.site_name || 'Menu Warung'}
+                                            {settings.site_name || 'Pesan Warung'}
                                         </h4>
                                         <p className="text-xs text-white/80">
                                             {settings.slogan || 'Makanan Enak & Terjangkau'}

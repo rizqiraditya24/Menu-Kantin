@@ -13,7 +13,7 @@ export default async function AdminLayout({
 
     const initialSettings = {
         logo_url: settings?.logo_url || null,
-        site_name: settings?.site_name || 'Menu Warung',
+        site_name: settings?.site_name || 'Pesan Warung',
     };
 
     return (

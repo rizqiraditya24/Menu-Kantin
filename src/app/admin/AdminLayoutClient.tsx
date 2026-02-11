@@ -32,7 +32,7 @@ export default function AdminLayoutClient({
                 if (freshData) {
                     const newSettings = {
                         logo_url: freshData.logo_url || null,
-                        site_name: freshData.site_name || 'Menu Warung'
+                        site_name: freshData.site_name || 'Pesan Warung'
                     };
                     setSettings(newSettings);
                     localStorage.setItem('siteSettings', JSON.stringify(newSettings));

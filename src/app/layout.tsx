@@ -6,8 +6,8 @@ import { getSiteSettings } from "@/lib/supabase";
 export async function generateMetadata() {
     const settings = await getSiteSettings();
     return {
-        title: settings?.site_name || "Menu Warung",
-        description: settings?.slogan || "Menu makanan warung/kantin online",
+        title: settings?.site_name || "Pesan Warung",
+        description: settings?.slogan || "Pesan makanan warung/kantin online",
         icons: {
             icon: settings?.logo_url || '/favicon.ico',
             shortcut: settings?.logo_url || '/favicon.ico',
