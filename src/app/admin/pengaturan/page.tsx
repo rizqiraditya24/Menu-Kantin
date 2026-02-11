@@ -135,7 +135,7 @@ export default function PengaturanPage() {
 
             {saved && (
                 <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 animate-fadeIn flex items-center gap-2">
-                    <span>✅</span> Pengaturan berhasil disimpan!
+                    Pengaturan berhasil disimpan!
                 </div>
             )}
 
@@ -177,13 +177,12 @@ export default function PengaturanPage() {
                                 Nomor WhatsApp
                             </label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">📱</span>
                                 <input
                                     type="tel"
                                     value={settings.whatsapp_number || ''}
                                     onChange={(e) => setSettings({ ...settings, whatsapp_number: e.target.value })}
                                     placeholder="Contoh: 08123456789"
-                                    className="w-full px-4 py-3 pl-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
@@ -250,7 +249,7 @@ export default function PengaturanPage() {
                             </>
                         ) : (
                             <>
-                                <span>💾</span> Simpan Pengaturan
+                                Simpan Pengaturan
                             </>
                         )}
                     </button>

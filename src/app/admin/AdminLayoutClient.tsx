@@ -100,11 +100,11 @@ export default function AdminLayoutClient({
     };
 
     const navItems = [
-        { href: '/admin', label: 'Dashboard', emoji: '📊' },
-        { href: '/admin/kategori', label: 'Kategori', emoji: '📁' },
-        { href: '/admin/produk', label: 'Produk', emoji: '🍜' },
-        { href: '/admin/pesanan', label: 'Pesanan', emoji: '📋' },
-        { href: '/admin/pengaturan', label: 'Pengaturan', emoji: '⚙️' },
+        { href: '/admin', label: 'Dashboard' },
+        { href: '/admin/kategori', label: 'Kategori'},
+        { href: '/admin/produk', label: 'Produk'},
+        { href: '/admin/pesanan', label: 'Pesanan'},
+        { href: '/admin/pengaturan', label: 'Pengaturan'},
     ];
 
     if (isLoading) {
@@ -276,7 +276,6 @@ export default function AdminLayoutClient({
                                         }
                                     `}
                                 >
-                                    <span className="text-xl">{item.emoji}</span>
                                     {item.label}
                                 </Link>
                             ))}
@@ -287,13 +286,13 @@ export default function AdminLayoutClient({
                                 href="/menu"
                                 className="flex items-center justify-center gap-2 w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                             >
-                                🍽️ Lihat Menu
+                                Lihat Menu
                             </Link>
                             <button
                                 onClick={handleLogout}
                                 className="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                             >
-                                🚪 Logout
+                                Logout
                             </button>
                         </div>
                     </div>
@@ -316,7 +315,6 @@ export default function AdminLayoutClient({
                                     }
                                 `}
                             >
-                                <span>{item.emoji}</span>
                                 {item.label}
                             </Link>
                         ))}

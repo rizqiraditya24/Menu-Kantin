@@ -64,7 +64,7 @@ export default function MenuLayoutClient({ initialSettings, children }: MenuLayo
                 <footer className="bg-gray-900 text-white py-6 mt-auto">
                     <div className="container mx-auto px-5 sm:px-6 lg:px-8 text-center">
                         <p className="text-gray-400 text-sm">
-                            © 2026 Pesan Warung. Made by Rizqi Raditya
+                            © 2026 Made by Rizqi Raditya
                         </p>
                     </div>
                 </footer>

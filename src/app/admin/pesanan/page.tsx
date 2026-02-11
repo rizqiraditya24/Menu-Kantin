@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { supabase, Order, OrderItem, formatPrice } from '@/lib/supabase';
 import Modal from '@/components/Modal';
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; emoji: string }> = {
-    pending: { label: 'Menunggu', bg: 'bg-yellow-100', text: 'text-yellow-700', emoji: '⏳' },
-    confirmed: { label: 'Dikonfirmasi', bg: 'bg-blue-100', text: 'text-blue-700', emoji: '✅' },
-    processing: { label: 'Diproses', bg: 'bg-purple-100', text: 'text-purple-700', emoji: '👨‍🍳' },
-    completed: { label: 'Selesai', bg: 'bg-green-100', text: 'text-green-700', emoji: '✔️' },
-    cancelled: { label: 'Dibatalkan', bg: 'bg-red-100', text: 'text-red-700', emoji: '❌' },
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string;}> = {
+    pending: { label: 'Menunggu', bg: 'bg-yellow-100', text: 'text-yellow-700'},
+    confirmed: { label: 'Dikonfirmasi', bg: 'bg-blue-100', text: 'text-blue-700'},
+    processing: { label: 'Diproses', bg: 'bg-purple-100', text: 'text-purple-700'},
+    completed: { label: 'Selesai', bg: 'bg-green-100', text: 'text-green-700' },
+    cancelled: { label: 'Dibatalkan', bg: 'bg-red-100', text: 'text-red-700' },
 };
 
 const STATUS_ORDER: string[] = ['pending', 'confirmed', 'processing', 'completed', 'cancelled'];
@@ -145,9 +145,9 @@ export default function PesananPage() {
                 </div>
                 <button
                     onClick={fetchOrders}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
                 >
-                    🔄 Refresh
+                    Refresh
                 </button>
             </div>
 
@@ -164,7 +164,6 @@ export default function PesananPage() {
                                 : 'border-gray-100 bg-white hover:border-gray-200'
                                 }`}
                         >
-                            <span className="text-xl">{config.emoji}</span>
                             <p className="text-xs font-medium text-gray-500 mt-1">{config.label}</p>
                             <p className="text-lg font-bold text-gray-800">{orderCounts[status] || 0}</p>
                         </button>
@@ -214,7 +213,7 @@ export default function PesananPage() {
                                             </p>
                                         </div>
                                         <span className={`${config.bg} ${config.text} px-2.5 py-1 rounded-full text-xs font-medium`}>
-                                            {config.emoji} {config.label}
+                                            {config.label}
                                         </span>
                                     </div>
                                     <p className="text-green-600 font-bold mb-3">{formatPrice(order.total_price)}</p>
@@ -293,7 +292,7 @@ export default function PesananPage() {
                                                     className={`${config.bg} ${config.text} px-3 py-1.5 rounded-full text-sm font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500`}
                                                 >
                                                     {STATUS_ORDER.map(s => (
-                                                        <option key={s} value={s}>{STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}</option>
+                                                        <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
                                                     ))}
                                                 </select>
                                             </td>
@@ -340,7 +339,7 @@ export default function PesananPage() {
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500">Status</label>
                                     <span className={`inline-block mt-0.5 ${STATUS_CONFIG[viewingOrder.status]?.bg} ${STATUS_CONFIG[viewingOrder.status]?.text} px-2.5 py-1 rounded-full text-xs font-medium`}>
-                                        {STATUS_CONFIG[viewingOrder.status]?.emoji} {STATUS_CONFIG[viewingOrder.status]?.label}
+                                         {STATUS_CONFIG[viewingOrder.status]?.label}
                                     </span>
                                 </div>
                                 <div>
@@ -417,7 +416,7 @@ export default function PesananPage() {
                                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 } disabled:opacity-50`}
                                         >
-                                            {config.emoji} {config.label}
+                                            {config.label}
                                         </button>
                                     );
                                 })}

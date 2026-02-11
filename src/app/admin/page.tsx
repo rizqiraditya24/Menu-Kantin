@@ -114,11 +114,6 @@ export default function AdminDashboard() {
                         </div>
                         <span className="text-5xl opacity-80">📋</span>
                     </div>
-                    {stats.pendingOrders > 0 && (
-                        <p className="text-white/90 text-xs mt-2 bg-white/20 inline-block px-2 py-1 rounded-full">
-                            ⏳ {stats.pendingOrders} menunggu
-                        </p>
-                    )}
                     <Link
                         href="/admin/pesanan"
                         className="inline-block mt-3 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors"

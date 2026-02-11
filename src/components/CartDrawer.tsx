@@ -43,7 +43,6 @@ export default function CartDrawer({ isOpen, onClose, onCheckout }: CartDrawerPr
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <span className="text-2xl">🛒</span>
                         <div>
                             <h2 className="text-lg font-bold text-white">Keranjang</h2>
                             <p className="text-white/80 text-xs">{totalItems} item</p>
@@ -150,7 +149,7 @@ export default function CartDrawer({ isOpen, onClose, onCheckout }: CartDrawerPr
                             onClick={onCheckout}
                             className="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold text-base transition-colors shadow-lg shadow-green-200 flex items-center justify-center gap-2"
                         >
-                            <span>📱</span> Selesaikan Pesanan
+                            Selesaikan Pesanan
                         </button>
                     </div>
                 )}

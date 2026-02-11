@@ -179,7 +179,7 @@ export default function MenuPage() {
             <Modal
                 isOpen={!!viewingProduct}
                 onClose={() => setViewingProduct(null)}
-                title="Detail Menu"
+                title="Detail Produk"
             >
                 {viewingProduct && (
                     <div className="space-y-4">
@@ -230,7 +230,7 @@ export default function MenuPage() {
                                 }}
                                 className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-200"
                             >
-                                🛒 Tambah ke Keranjang
+                                + Keranjang
                             </button>
                         </div>
                     </div>
