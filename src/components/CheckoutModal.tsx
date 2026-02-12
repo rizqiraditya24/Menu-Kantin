@@ -210,7 +210,6 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     {/* WhatsApp Info */}
                     <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                         <p className="text-green-700 text-sm flex items-center gap-2">
-                            <span className="text-lg">📱</span>
                             Pesanan akan dikonfirmasi via WhatsApp
                             {whatsappNumber && (
                                 <span className="font-semibold">({whatsappNumber})</span>
@@ -236,7 +235,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                                 'Memproses...'
                             ) : (
                                 <>
-                                    <span>📱</span> Konfirmasi via WA
+                                    Konfirmasi via WA
                                 </>
                             )}
                         </button>
