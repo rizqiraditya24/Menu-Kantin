@@ -21,6 +21,8 @@ export default function ProdukPage() {
         image_url: '',
     });
     const [saving, setSaving] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -176,6 +178,12 @@ export default function ProdukPage() {
         }).format(price);
     };
 
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = categoryFilter === '' || product.category_id === categoryFilter;
+        return matchesSearch && matchesCategory;
+    });
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -208,17 +216,46 @@ export default function ProdukPage() {
                 </div>
             )}
 
+            {/* Search and Filter */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                    <input
+                        type="text"
+                        placeholder="Cari produk..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+                </div>
+                <div className="relative sm:w-1/3">
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white appearance-none"
+                    >
+                        <option value="">Semua Kategori</option>
+                        {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                    </select>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                        ▼
+                    </span>
+                </div>
+            </div>
+
             {/* Product Cards (Mobile) / Table (Desktop) */}
             <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
                 {/* Mobile Cards */}
                 <div className="block md:hidden divide-y divide-gray-100">
-                    {products.length === 0 ? (
+                    {filteredProducts.length === 0 ? (
                         <div className="px-6 py-12 text-center text-gray-500">
                             <span className="text-4xl block mb-2">🍜</span>
-                            Belum ada produk. Tambahkan produk pertama Anda!
+                            {searchTerm || categoryFilter ? 'Tidak ada produk yang cocok' : 'Belum ada produk. Tambahkan produk pertama Anda!'}
                         </div>
                     ) : (
-                        products.map(product => (
+                        filteredProducts.map(product => (
                             <div key={product.id} className="p-4">
                                 <div className="flex gap-4">
                                     <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
@@ -277,15 +314,15 @@ export default function ProdukPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length === 0 ? (
+                            {filteredProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                                         <span className="text-4xl block mb-2">🍜</span>
-                                        Belum ada produk. Tambahkan produk pertama Anda!
+                                        {searchTerm || categoryFilter ? 'Tidak ada produk yang cocok' : 'Belum ada produk. Tambahkan produk pertama Anda!'}
                                     </td>
                                 </tr>
                             ) : (
-                                products.map(product => (
+                                filteredProducts.map(product => (
                                     <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">

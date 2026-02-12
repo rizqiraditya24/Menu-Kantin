@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { supabase, Order, OrderItem, formatPrice } from '@/lib/supabase';
 import Modal from '@/components/Modal';
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string;}> = {
-    pending: { label: 'Menunggu', bg: 'bg-yellow-100', text: 'text-yellow-700'},
-    confirmed: { label: 'Dikonfirmasi', bg: 'bg-blue-100', text: 'text-blue-700'},
-    processing: { label: 'Diproses', bg: 'bg-purple-100', text: 'text-purple-700'},
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; }> = {
+    pending: { label: 'Menunggu', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    confirmed: { label: 'Dikonfirmasi', bg: 'bg-blue-100', text: 'text-blue-700' },
+    processing: { label: 'Diproses', bg: 'bg-purple-100', text: 'text-purple-700' },
     completed: { label: 'Selesai', bg: 'bg-green-100', text: 'text-green-700' },
     cancelled: { label: 'Dibatalkan', bg: 'bg-red-100', text: 'text-red-700' },
 };
@@ -21,6 +21,7 @@ export default function PesananPage() {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [loadingItems, setLoadingItems] = useState(false);
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [searchTerm, setSearchTerm] = useState('');
     const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
     useEffect(() => {
@@ -119,9 +120,23 @@ export default function PesananPage() {
         }
     };
 
-    const filteredOrders = statusFilter === 'all'
-        ? orders
-        : orders.filter(o => o.status === statusFilter);
+    const filteredOrders = orders
+        .filter(order => {
+            const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+            const matchesSearch = order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesStatus && matchesSearch;
+        })
+        .sort((a, b) => {
+            // Priority: pending > processing > confirmed > completed > cancelled
+            const priority = { pending: 0, processing: 1, confirmed: 2, completed: 3, cancelled: 4 };
+            const statusA = priority[a.status as keyof typeof priority] ?? 99;
+            const statusB = priority[b.status as keyof typeof priority] ?? 99;
+
+            if (statusA !== statusB) return statusA - statusB;
+
+            // If same status, sort by date (newest first)
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
 
     const orderCounts = orders.reduce((acc, order) => {
         acc[order.status] = (acc[order.status] || 0) + 1;
@@ -151,21 +166,36 @@ export default function PesananPage() {
                 </button>
             </div>
 
+            {/* Search and Filters */}
+            <div className="mb-6">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Cari nama pelanggan..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+                </div>
+            </div>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
                 {STATUS_ORDER.map(status => {
                     const config = STATUS_CONFIG[status];
+                    const isActive = statusFilter === status;
                     return (
                         <button
                             key={status}
                             onClick={() => setStatusFilter(statusFilter === status ? 'all' : status)}
-                            className={`p-3 rounded-xl border-2 transition-all text-center ${statusFilter === status
-                                ? 'border-primary-500 bg-primary-50 shadow-md'
-                                : 'border-gray-100 bg-white hover:border-gray-200'
+                            className={`p-3 rounded-xl border-2 transition-all text-center ${isActive
+                                ? `${config.bg} ${config.text} border-current shadow-md ring-1 ring-opacity-50`
+                                : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200 hover:bg-gray-50'
                                 }`}
                         >
-                            <p className="text-xs font-medium text-gray-500 mt-1">{config.label}</p>
-                            <p className="text-lg font-bold text-gray-800">{orderCounts[status] || 0}</p>
+                            <p className="text-xs font-medium mt-1 opacity-80">{config.label}</p>
+                            <p className="text-lg font-bold">{orderCounts[status] || 0}</p>
                         </button>
                     );
                 })}
@@ -224,16 +254,21 @@ export default function PesananPage() {
                                         >
                                             Detail
                                         </button>
-                                        <select
-                                            value={order.status}
-                                            onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                                            disabled={updatingStatus === order.id}
-                                            className="flex-1 bg-white border border-gray-200 rounded-lg text-sm py-2 px-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                        >
-                                            {STATUS_ORDER.map(s => (
-                                                <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative flex-1">
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                                                disabled={updatingStatus === order.id}
+                                                className="w-full bg-white border border-gray-200 rounded-lg text-sm py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none"
+                                            >
+                                                {STATUS_ORDER.map(s => (
+                                                    <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 text-xs">
+                                                ▼
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -247,6 +282,7 @@ export default function PesananPage() {
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="text-left px-6 py-4 font-semibold text-gray-700">Pelanggan</th>
+                                <th className="text-left px-6 py-4 font-semibold text-gray-700">Catatan</th>
                                 <th className="text-left px-6 py-4 font-semibold text-gray-700">Tanggal</th>
                                 <th className="text-right px-6 py-4 font-semibold text-gray-700">Total</th>
                                 <th className="text-center px-6 py-4 font-semibold text-gray-700">Status</th>
@@ -256,7 +292,7 @@ export default function PesananPage() {
                         <tbody>
                             {filteredOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                         <span className="text-4xl block mb-2">📋</span>
                                         {statusFilter !== 'all' ? 'Tidak ada pesanan dengan status ini' : 'Belum ada pesanan'}
                                     </td>
@@ -268,9 +304,11 @@ export default function PesananPage() {
                                         <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <p className="font-medium text-gray-800">{order.customer_name}</p>
-                                                {order.customer_note && (
-                                                    <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">📝 {order.customer_note}</p>
-                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm text-gray-500 truncate max-w-[200px]" title={order.customer_note || ''}>
+                                                    {order.customer_note || '-'}
+                                                </p>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
                                                 {new Date(order.created_at).toLocaleDateString('id-ID', {
@@ -285,16 +323,21 @@ export default function PesananPage() {
                                                 <span className="font-bold text-green-600">{formatPrice(order.total_price)}</span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <select
-                                                    value={order.status}
-                                                    onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                                                    disabled={updatingStatus === order.id}
-                                                    className={`${config.bg} ${config.text} px-3 py-1.5 rounded-full text-sm font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                                                >
-                                                    {STATUS_ORDER.map(s => (
-                                                        <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
-                                                    ))}
-                                                </select>
+                                                <div className="relative inline-block">
+                                                    <select
+                                                        value={order.status}
+                                                        onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                                                        disabled={updatingStatus === order.id}
+                                                        className={`${config.bg} ${config.text} pl-3 pr-8 py-1.5 rounded-full text-sm font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none`}
+                                                    >
+                                                        {STATUS_ORDER.map(s => (
+                                                            <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-70 text-xs">
+                                                        ▼
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
@@ -339,7 +382,7 @@ export default function PesananPage() {
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500">Status</label>
                                     <span className={`inline-block mt-0.5 ${STATUS_CONFIG[viewingOrder.status]?.bg} ${STATUS_CONFIG[viewingOrder.status]?.text} px-2.5 py-1 rounded-full text-xs font-medium`}>
-                                         {STATUS_CONFIG[viewingOrder.status]?.label}
+                                        {STATUS_CONFIG[viewingOrder.status]?.label}
                                     </span>
                                 </div>
                                 <div>
@@ -362,7 +405,7 @@ export default function PesananPage() {
                             {viewingOrder.customer_note && (
                                 <div className="mt-3 pt-3 border-t border-gray-200">
                                     <label className="block text-xs font-medium text-gray-500">Catatan</label>
-                                    <p className="text-sm text-gray-700 mt-1">📝 {viewingOrder.customer_note}</p>
+                                    <p className="text-sm text-gray-700 mt-1">{viewingOrder.customer_note}</p>
                                 </div>
                             )}
                         </div>

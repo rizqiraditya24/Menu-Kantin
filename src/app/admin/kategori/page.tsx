@@ -13,6 +13,7 @@ export default function KategoriPage() {
     const [viewingCategory, setViewingCategory] = useState<(Category & { product_count: number }) | null>(null);
     const [formData, setFormData] = useState({ name: '' });
     const [saving, setSaving] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchCategories();
@@ -112,6 +113,10 @@ export default function KategoriPage() {
         }
     };
 
+    const filteredCategories = categories.filter(category =>
+        category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -135,17 +140,31 @@ export default function KategoriPage() {
                 </button>
             </div>
 
+            {/* Search */}
+            <div className="mb-6">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Cari kategori..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+                </div>
+            </div>
+
             {/* Table */}
             <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
                 {/* Mobile Cards */}
                 <div className="block md:hidden divide-y divide-gray-100">
-                    {categories.length === 0 ? (
+                    {filteredCategories.length === 0 ? (
                         <div className="px-6 py-12 text-center text-gray-500">
                             <span className="text-4xl block mb-2">📁</span>
-                            Belum ada kategori. Tambahkan kategori pertama Anda!
+                            {searchTerm ? 'Tidak ada kategori yang cocok' : 'Belum ada kategori. Tambahkan kategori pertama Anda!'}
                         </div>
                     ) : (
-                        categories.map(category => (
+                        filteredCategories.map(category => (
                             <div key={category.id} className="p-4">
                                 <div className="flex gap-4 items-center">
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -193,15 +212,15 @@ export default function KategoriPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {categories.length === 0 ? (
+                            {filteredCategories.length === 0 ? (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
                                         <span className="text-4xl block mb-2">📁</span>
-                                        Belum ada kategori. Tambahkan kategori pertama Anda!
+                                        {searchTerm ? 'Tidak ada kategori yang cocok' : 'Belum ada kategori. Tambahkan kategori pertama Anda!'}
                                     </td>
                                 </tr>
                             ) : (
-                                categories.map(category => (
+                                filteredCategories.map(category => (
                                     <tr key={category.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <span className="font-medium text-gray-800">{category.name}</span>

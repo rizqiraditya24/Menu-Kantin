@@ -101,10 +101,10 @@ export default function AdminLayoutClient({
 
     const navItems = [
         { href: '/admin', label: 'Dashboard' },
-        { href: '/admin/kategori', label: 'Kategori'},
-        { href: '/admin/produk', label: 'Produk'},
-        { href: '/admin/pesanan', label: 'Pesanan'},
-        { href: '/admin/pengaturan', label: 'Pengaturan'},
+        { href: '/admin/kategori', label: 'Kategori' },
+        { href: '/admin/produk', label: 'Produk' },
+        { href: '/admin/pesanan', label: 'Pesanan' },
+        { href: '/admin/pengaturan', label: 'Pengaturan' },
     ];
 
     if (isLoading) {
@@ -210,8 +210,8 @@ export default function AdminLayoutClient({
                                 <span className="text-xl sm:text-2xl">🍜</span>
                             )}
                             <div>
-                                <h1 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">Admin Panel</h1>
-                                <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">{settings.site_name}</p>
+                                <h1 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">{settings.site_name}</h1>
+                                <p className="text-[10px] sm:text-xs text-gray-500">Admin Panel</p>
                             </div>
                         </div>
 

@@ -40,7 +40,7 @@ export default function ProductCard({ product, onViewDetail, onAddToCart }: Prod
                     </div>
                 )}
                 {/* Price Tag */}
-                <div className="absolute bottom-2 right-2 bg-primary-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-md">
+                <div className="absolute bottom-2 right-2 bg-primary-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-md">
                     {formatPrice(product.price)}
                 </div>
             </div>
