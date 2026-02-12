@@ -323,15 +323,17 @@ export default function PesananPage() {
                                                 <span className="font-bold text-green-600">{formatPrice(order.total_price)}</span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <div className="relative inline-block">
+                                                <div className="relative inline-block w-full max-w-[140px]">
                                                     <select
                                                         value={order.status}
                                                         onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                                                         disabled={updatingStatus === order.id}
-                                                        className={`${config.bg} ${config.text} pl-3 pr-8 py-1.5 rounded-full text-sm font-medium border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none`}
+                                                        className={`${config.bg} ${config.text} w-full border-0 pl-3 pr-8 py-1.5 rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none shadow-sm cursor-pointer`}
                                                     >
                                                         {STATUS_ORDER.map(s => (
-                                                            <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                                                            <option key={s} value={s} className="bg-white text-gray-800">
+                                                                {STATUS_CONFIG[s].label}
+                                                            </option>
                                                         ))}
                                                     </select>
                                                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-70 text-xs">
