@@ -41,16 +41,29 @@ export default function MenuPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // Fetch categories with product count
-            const { data: categoriesData } = await supabase
+            // Fetch categories with active product count
+            const { data: catsWithProducts } = await supabase
                 .from('categories')
-                .select('*, products(count)')
+                .select('*, products!inner(count)')
+                .eq('is_active', true)
+                .eq('products.is_active', true)
                 .order('name');
 
-            if (categoriesData) {
-                const categoriesWithCount = categoriesData.map((cat: any) => ({
+            const { data: allActiveCats } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('is_active', true)
+                .order('name');
+
+            if (allActiveCats) {
+                const countMap: Record<string, number> = {};
+                catsWithProducts?.forEach((cat: any) => {
+                    countMap[cat.id] = cat.products?.[0]?.count || 0;
+                });
+
+                const categoriesWithCount = allActiveCats.map((cat: any) => ({
                     ...cat,
-                    product_count: cat.products?.[0]?.count || 0,
+                    product_count: countMap[cat.id] || 0,
                 }));
                 setCategories(categoriesWithCount);
             }
@@ -59,6 +72,7 @@ export default function MenuPage() {
             const { data: productsData } = await supabase
                 .from('products')
                 .select('*, category:categories(*)')
+                .eq('is_active', true)
                 .order('name');
 
             if (productsData) {

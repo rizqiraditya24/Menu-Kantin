@@ -32,8 +32,8 @@ export default function ProdukPage() {
         setLoading(true);
         try {
             const [productsResult, categoriesResult] = await Promise.all([
-                supabase.from('products').select('*, category:categories(*)').order('name'),
-                supabase.from('categories').select('*').order('name'),
+                supabase.from('products').select('*, category:categories(*)').eq('is_active', true).order('name'),
+                supabase.from('categories').select('*').eq('is_active', true).order('name'),
             ]);
 
             if (productsResult.data) setProducts(productsResult.data);
@@ -49,7 +49,7 @@ export default function ProdukPage() {
         setEditingProduct(null);
         setFormData({
             name: '',
-            category_id: categories[0]?.id || '',
+            category_id: '',
             description: '',
             price: '',
             image_url: '',
@@ -102,7 +102,18 @@ export default function ProdukPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name.trim() || !formData.category_id || !formData.price) return;
+        if (!formData.name.trim()) {
+            alert('Nama produk wajib diisi');
+            return;
+        }
+        if (!formData.category_id) {
+            alert('Kategori wajib dipilih');
+            return;
+        }
+        if (!formData.price || parseFloat(formData.price) <= 0) {
+            alert('Harga wajib diisi dan harus lebih dari 0');
+            return;
+        }
 
         setSaving(true);
         try {
@@ -112,6 +123,7 @@ export default function ProdukPage() {
                 description: formData.description.trim() || null,
                 price: parseFloat(formData.price),
                 image_url: formData.image_url || null,
+                is_active: true, // Default to true for new products
             };
 
             if (editingProduct) {
@@ -157,7 +169,7 @@ export default function ProdukPage() {
 
             const { error } = await supabase
                 .from('products')
-                .delete()
+                .update({ is_active: false }) // Soft delete
                 .eq('id', product.id);
 
             if (error) throw error;
@@ -394,7 +406,7 @@ export default function ProdukPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Nama Produk
+                            Nama Produk <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -408,7 +420,7 @@ export default function ProdukPage() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Kategori
+                            Kategori <span className="text-red-500">*</span>
                         </label>
                         <select
                             value={formData.category_id}
@@ -438,14 +450,14 @@ export default function ProdukPage() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Harga (Rp)
+                            Harga (Rp) <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="number"
                             value={formData.price}
                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             placeholder="Masukkan harga"
-                            min="0"
+                            min="1"
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                             required
                         />

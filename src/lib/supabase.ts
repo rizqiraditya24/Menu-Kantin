@@ -15,6 +15,7 @@ export interface Category {
     name: string;
     created_at: string;
     product_count?: number;
+    is_active?: boolean;
 }
 
 export interface Product {
@@ -26,6 +27,7 @@ export interface Product {
     image_url: string | null;
     created_at: string;
     category?: Category;
+    is_active?: boolean;
 }
 
 export interface SiteSettings {

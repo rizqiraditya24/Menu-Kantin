@@ -24,15 +24,31 @@ export default function KategoriPage() {
         try {
             const { data, error } = await supabase
                 .from('categories')
-                .select('*, products(count)')
+                .select('*, products!inner(count)')
+                .eq('is_active', true)
+                .eq('products.is_active', true)
+                .order('name');
+
+            // Also fetch categories with no active products
+            const { data: emptyData, error: emptyError } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('is_active', true)
                 .order('name');
 
             if (error) throw error;
 
-            const categoriesWithCount = data?.map((cat: any) => ({
+            // Build a map of category_id -> active product count
+            const countMap: Record<string, number> = {};
+            data?.forEach((cat: any) => {
+                countMap[cat.id] = cat.products?.[0]?.count || 0;
+            });
+
+            // Merge: use emptyData as the base, add product_count from countMap
+            const categoriesWithCount = (emptyData || []).map((cat: any) => ({
                 ...cat,
-                product_count: cat.products?.[0]?.count || 0,
-            })) || [];
+                product_count: countMap[cat.id] || 0,
+            }));
 
             setCategories(categoriesWithCount);
         } catch (error) {
@@ -75,7 +91,7 @@ export default function KategoriPage() {
             } else {
                 const { error } = await supabase
                     .from('categories')
-                    .insert({ name: formData.name.trim() });
+                    .insert({ name: formData.name.trim(), is_active: true });
 
                 if (error) throw error;
             }
@@ -92,16 +108,17 @@ export default function KategoriPage() {
 
     const handleDelete = async (category: Category & { product_count: number }) => {
         if (category.product_count > 0) {
-            alert(`Tidak dapat menghapus kategori "${category.name}" karena masih memiliki ${category.product_count} produk.`);
+            alert(`Tidak dapat menghapus kategori "${category.name}" karena masih memiliki ${category.product_count} produk aktif. Hapus semua produk terlebih dahulu.`);
             return;
         }
 
         if (!confirm(`Yakin ingin menghapus kategori "${category.name}"?`)) return;
 
         try {
+            // Soft delete the category
             const { error } = await supabase
                 .from('categories')
-                .delete()
+                .update({ is_active: false })
                 .eq('id', category.id);
 
             if (error) throw error;
