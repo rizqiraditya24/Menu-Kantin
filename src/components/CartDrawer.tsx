@@ -65,7 +65,7 @@ export default function CartDrawer({ isOpen, onClose, onCheckout }: CartDrawerPr
                                 Keranjang Kosong
                             </h3>
                             <p className="text-gray-500 text-sm">
-                                Tambahkan menu favorit kamu ke keranjang
+                                Tambahkan produk favorit kamu ke keranjang
                             </p>
                         </div>
                     ) : (

@@ -209,7 +209,7 @@ export default function ProdukPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Produk</h2>
-                    <p className="text-gray-600">Kelola produk menu</p>
+                    <p className="text-gray-600">Kelola menu produk</p>
                 </div>
                 <button
                     onClick={openAddModal}

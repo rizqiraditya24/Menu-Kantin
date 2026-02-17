@@ -98,7 +98,7 @@ export default function AdminDashboard() {
                         </div>
                         <span className="hidden sm:block text-3xl sm:text-5xl opacity-80 shrink-0">📁</span>
                     </div>
-                    <p className="text-white/70 text-[10px] sm:text-xs mt-2 sm:mt-3">Kategori menu aktif</p>
+                    <p className="text-white/70 text-[10px] sm:text-xs mt-2 sm:mt-3">Kategori produk aktif</p>
                 </Link>
 
                 <Link href="/admin/produk" className="block bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
                         </div>
                         <span className="hidden sm:block text-3xl sm:text-5xl opacity-80 shrink-0">🍜</span>
                     </div>
-                    <p className="text-white/70 text-[10px] sm:text-xs mt-2 sm:mt-3">Item menu tersedia</p>
+                    <p className="text-white/70 text-[10px] sm:text-xs mt-2 sm:mt-3">Item produk tersedia</p>
                 </Link>
 
                 <Link href="/admin/pesanan" className="block bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">

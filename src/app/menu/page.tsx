@@ -123,7 +123,7 @@ export default function MenuPage() {
             <div className="flex items-center justify-center min-h-[50vh]">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-gray-500">Memuat menu...</p>
+                    <p className="text-gray-500">Memuat produk...</p>
                 </div>
             </div>
         );
@@ -138,7 +138,7 @@ export default function MenuPage() {
                     <div className="relative flex-1">
                         <input
                             type="text"
-                            placeholder="Cari menu..."
+                            placeholder="Cari produk..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-4 py-2.5 pl-11 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-gray-50 text-sm"
@@ -159,7 +159,7 @@ export default function MenuPage() {
                             <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`}>▾</span>
                         </button>
 
-                        {/* Dropdown Menu */}
+                        {/* Dropdown Produk */}
                         {isCategoryDropdownOpen && (
                             <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-lg border border-secondary-200 shadow-lg z-20 overflow-hidden animate-fadeIn">
                                 <div className="max-h-56 overflow-y-auto">
@@ -236,11 +236,11 @@ export default function MenuPage() {
             ) : (
                 <div className="text-center py-12">
                     <span className="text-6xl mb-4 block">🍽️</span>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Menu Tidak Ditemukan</h3>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Produk Tidak Ditemukan</h3>
                     <p className="text-gray-500">
                         {searchQuery
-                            ? `Tidak ada menu yang cocok dengan "${searchQuery}"`
-                            : 'Tidak ada menu dalam kategori ini'
+                            ? `Tidak ada produk yang cocok dengan "${searchQuery}"`
+                            : 'Tidak ada produk dalam kategori ini'
                         }
                     </p>
                 </div>
@@ -277,7 +277,7 @@ export default function MenuPage() {
                             </div>
                         )}
                         <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-1">Nama Menu</label>
+                            <label className="block text-sm font-medium text-gray-500 mb-1">Nama Produk</label>
                             <p className="text-lg font-semibold text-gray-800">{viewingProduct.name}</p>
                         </div>
                         <div>

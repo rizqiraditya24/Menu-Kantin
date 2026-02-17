@@ -73,8 +73,7 @@ export default function MenuLayoutClient({ initialSettings, children }: MenuLayo
         <CartProvider>
             <div className="min-h-screen flex flex-col">
                 <MenuHeader settings={initialSettings} />
-
-                {/* Main Content */}
+                
                 {/* Main Content */}
                 <main className="flex-grow container mx-auto px-5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                     {children}
