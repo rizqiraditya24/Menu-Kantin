@@ -18,11 +18,13 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
     const [siteName, setSiteName] = useState('Pesan Warung');
     const [success, setSuccess] = useState(false);
+    const [lastWaUrl, setLastWaUrl] = useState('');
 
     useEffect(() => {
         if (isOpen) {
             fetchSettings();
             setSuccess(false);
+            setLastWaUrl('');
         }
     }, [isOpen]);
 
@@ -112,7 +114,9 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             if (whatsappNumber) {
                 const waNumber = formatWhatsAppNumber(whatsappNumber);
                 const message = buildWhatsAppMessage();
-                window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+                const url = `https://wa.me/${waNumber}?text=${message}`;
+                setLastWaUrl(url);
+                window.open(url, '_blank');
             }
 
             setSuccess(true);
@@ -146,9 +150,19 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                             ⚠️ Nomor WhatsApp belum diatur di pengaturan. Hubungi admin untuk konfirmasi pesanan.
                         </p>
                     )}
+                    {lastWaUrl && (
+                        <a
+                            href={lastWaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium transition-colors mt-4 shadow-lg shadow-green-200"
+                        >
+                            Buka WhatsApp
+                        </a>
+                    )}
                     <button
                         onClick={handleClose}
-                        className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-medium transition-colors mt-4"
+                        className={`w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-medium transition-colors ${lastWaUrl ? 'mt-3' : 'mt-4'}`}
                     >
                         Tutup
                     </button>
